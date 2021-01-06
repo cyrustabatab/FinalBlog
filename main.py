@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash,abort
+from flask import Flask, render_template, redirect, url_for, flash,abort,request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -9,6 +9,9 @@ from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreatePostForm,RegisterForm,LoginForm,CommentForm
 from flask_gravatar import Gravatar
+import smtplib
+import os
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -183,8 +186,33 @@ def show_post(post_id):
 def about():
     return render_template("about.html")
 
-@app.route("/contact")
+@app.route("/contact",methods=['GET','POST'])
 def contact():
+
+    if request.method == 'POST':
+
+
+        name = request.form['name']
+        email = request.form['email']
+        telephone = request.form['telephone']
+        message = request.form['message']
+
+        my_email= "calcguru2020@gmail.com"
+        to_email = "ctabatab@gmail.com"
+
+        message = f"Subject: Message From Blog!\n\n{name}\n{email}\n{telephone}\n{message}"
+        with smtplib.SMTP('smtp.gmail.com',port=587) as connection:
+            connection.starttls()
+            connection.login(user=my_email,password=os.environ.get('PASSWORD'))
+            connection.sendmail(from_addr=my_email,to_addrs=to_email,msg=message)
+
+
+
+        flash("Message Sent!")
+
+
+
+
     return render_template("contact.html")
 
 @app.route("/new-post",methods=['GET','POST'])
